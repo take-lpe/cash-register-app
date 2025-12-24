@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>レジ金管理アプリ</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1, h2 { text-align: center; color: #333; }
+        
+        /* レイアウト：入力欄と計算結果を横並びに */
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .input-section { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .history-section { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* 金種入力のスタイル */
+        .money-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .money-row label { width: 100px; font-weight: bold; }
+        .money-row input { width: 80px; text-align: right; padding: 5px; }
+        
+        /* 重要な数字を目立たせる */
+        .total-display { font-size: 1.2em; border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; }
+        .diff-display { font-size: 1.5em; font-weight: bold; text-align: center; margin: 20px 0; padding: 10px; background: #eee; border-radius: 5px; }
+        
+        /* 差額の色分け */
+        .plus { color: blue; }
+        .minus { color: red; }
+        .zero { color: green; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        th { background-color: #eee; text-align: center; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1em; }
+        button:hover { background-color: #218838; }
+        .del-btn { background-color: #dc3545; width: auto; padding: 2px 8px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+    <h1>💰 レジ金管理アプリ</h1>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>本日のレジ締め</h2>
+            
+            <div class="money-row">
+                <label>日付</label>
+                <input type="date" id="input-date">
+            </div>
+
+            <hr>
+            <h3>現金カウント</h3>
+            <div class="money-row"><label>10,000円</label> x <input type="number" class="cash-count" data-val="10000" oninput="calc()"></div>
+            <div class="money-row"><label>5,000円</label> x <input type="number" class="cash-count" data-val="5000" oninput="calc()"></div>
+            <div class="money-row"><label>1,000円</label> x <input type="number" class="cash-count" data-val="1000" oninput="calc()"></div>
+            <div class="money-row"><label>500円</label> x <input type="number" class="cash-count" data-val="500" oninput="calc()"></div>
+            <div class="money-row"><label>100円</label> x <input type="number" class="cash-count" data-val="100" oninput="calc()"></div>
+            <div class="money-row"><label>50円</label> x <input type="number" class="cash-count" data-val="50" oninput="calc()"></div>
+            <div class="money-row"><label>10円</label> x <input type="number" class="cash-count" data-val="10" oninput="calc()"></div>
+            <div class="money-row"><label>5円</label> x <input type="number" class="cash-count" data-val="5" oninput="calc()"></div>
+            <div class="money-row"><label>1円</label> x <input type="number" class="cash-count" data-val="1" oninput="calc()"></div>
+
+            <div class="total-display">
+                手元の現金合計: <span id="display-cash-total">0</span> 円
+            </div>
+
+            <hr>
+            <div class="money-row">
+                <label>レジ上の売上</label>
+                <input type="number" id="input-system" placeholder="レジの数字を入力" oninput="calc()">
+            </div>
+
+            <div id="diff-area" class="diff-display zero">差額: 0 円</div>
+
+            <textarea id="input-memo" placeholder="備考・メモ（例：お釣りを補充した、など）" style="width: 95%; height: 60px;"></textarea>
+            
+            <br><br>
+            <button onclick="saveRecord()">記録する</button>
+        </div>
+
+        <div class="history-section">
+            <h2>過去の履歴</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日付</th>
+                        <th>差額</th>
+                        <th>実金</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="history-list">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 今日の日付を初期セット
+        document.getElementById('input-date').valueAsDate = new Date();
+
+        // ページ読み込み時に履歴を取得
+        window.onload = loadHistory;
+
+        // ★自動計算ロジック
+        function calc() {
+            // 1. 現金の合計を計算
+            let cashTotal = 0;
+            // class="cash-count" がついている入力欄を全部集める
+            const inputs = document.querySelectorAll('.cash-count');
+            inputs.forEach(input => {
+                const val = Number(input.getAttribute('data-val')); // 10000円などの単価
+                const count = Number(input.value); // 枚数
+                cashTotal += val * count;
+            });
+
+            // 2. 画面に表示
+            document.getElementById('display-cash-total').innerText = cashTotal.toLocaleString();
+
+            // 3. 差額を計算（手元の現金 - レジの売上）
+            const systemVal = Number(document.getElementById('input-system').value);
+            const diff = cashTotal - systemVal;
+            
+            // 4. 差額のデザイン制御
+            const diffArea = document.getElementById('diff-area');
+            diffArea.innerText = `差額: ${diff.toLocaleString()} 円`;
+            
+            diffArea.className = 'diff-display'; // クラスをリセット
+            if (diff > 0) diffArea.classList.add('plus');       // 多い場合：青
+            else if (diff < 0) diffArea.classList.add('minus'); // 不足の場合：赤
+            else diffArea.classList.add('zero');                // ぴったりの場合：緑
+            
+            return { cashTotal, systemVal };
+        }
+
+        // ★保存処理
+        async function saveRecord() {
+            const date = document.getElementById('input-date').value;
+            const { cashTotal, systemVal } = calc(); // 計算結果をもらう
+            const memo = document.getElementById('input-memo').value;
+
+            if (!date) return alert("日付を入れてください");
+
+            await fetch('/api/registers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: date,
+                    system_amount: systemVal,
+                    cash_amount: cashTotal,
+                    memo: memo
+                })
+            });
+
+            alert("記録しました！");
+            loadHistory(); // 履歴を再読み込み
+        }
+
+        // ★履歴読み込み
+        async function loadHistory() {
+            const res = await fetch('/api/registers');
+            const data = await res.json();
+            const tbody = document.getElementById('history-list');
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                // 差額の色付け用
+                let colorStyle = 'color: green;';
+                if(row.difference > 0) colorStyle = 'color: blue; font-weight:bold;';
+                if(row.difference < 0) colorStyle = 'color: red; font-weight:bold;';
+
+                tr.innerHTML = `
+                    <td>${row.date}<br><small style="color:#666">${row.memo || ''}</small></td>
+                    <td style="${colorStyle}">${row.difference}</td>
+                    <td>${row.cash_amount.toLocaleString()}</td>
+                    <td><button class="del-btn" onclick="deleteRecord(${row.id})">削除</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ★削除処理
+        async function deleteRecord(id) {
+            if(!confirm("削除しますか？")) return;
+            await fetch(`/api/registers/${id}`, { method: 'DELETE' });
+            loadHistory();
+        }
+    </script>
+</body>
+</html>
