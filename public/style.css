@@ -1,0 +1,138 @@
+ * {
+     box-sizing: border-box;
+ }
+
+ html {
+     scroll-behavior: smooth;
+ }
+
+ body {
+     font-family: sans-serif;
+     max-width: 80vw;
+     margin: 0 auto;
+     padding: 20px;
+     background-color: #f4f7f6;
+ }
+
+ .container {
+     display: flex;
+     gap: 20px;
+     flex-wrap: wrap;
+ }
+
+ .input-section {
+     flex: 1;
+     background: #ccc;
+     padding: 20px;
+     border-radius: 8px;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+ }
+
+ .result-section {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     justify-content: space-between;
+     align-items: center;
+     background: #ccc;
+     padding: 20px;
+     border-radius: 8px;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+ }
+
+ .money-row {
+     display: flex;
+     justify-content: space-between;
+     margin-bottom: 10px;
+     align-items: center;
+ }
+
+ .money-row label {
+     width: 120px;
+     font-weight: bold;
+ }
+
+ .money-row input {
+     width: 100px;
+     text-align: right;
+     padding: 5px;
+ }
+
+ .total-display {
+     font-size: 1.2em;
+     border-top: 2px solid #333;
+     margin-top: 10px;
+     padding-top: 10px;
+ }
+
+ .diff-display {
+     font-size: 1.5em;
+     font-weight: bold;
+     text-align: center;
+     margin: 20px 0;
+     padding: 10px;
+     background: #eee;
+     border-radius: 5px;
+ }
+
+ .plus {
+     color: blue;
+ }
+
+ .minus {
+     color: red;
+ }
+
+ .zero {
+     color: green;
+ }
+
+ table {
+     background-color: #fff;
+     width: 100%;
+     border-collapse: collapse;
+     margin-top: 10px;
+ }
+
+ th,
+ td {
+     border: 2px solid #ccc;
+     padding: 8px;
+     text-align: center;
+ }
+
+ th {
+     background-color: #eee;
+     text-align: center;
+ }
+
+ button {
+     width: 100%;
+     padding: 10px;
+     background-color: #28a745;
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     font-size: 1.1em;
+ }
+
+ button:hover {
+     background-color: #218838;
+ }
+
+ .del-btn {
+     background-color: #dc3545;
+     width: auto;
+     padding: 2px 8px;
+     font-size: 0.8em;
+ }
+
+ .fixed-money-area {
+     margin-bottom: 15px;
+ }
+
+ .active {
+    background-color: #1a732f;
+    font-weight: bold;
+ }

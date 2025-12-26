@@ -22,11 +22,24 @@ db.serialize(() => {
 });
 
 app.get('/api/registers', (req, res) => {
-    db.all("SELECT * FROM registers ORDER BY date DESC", (err, rows) => {
+    const sql = "SELECT * FROM registers ORDER BY date DESC LIMIT 7";
+
+    db.all(sql, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
+
+app.get('/api/graph-data', (req, res) => {
+    const sql = "SELECT * FROM registers ORDER BY date ASC";
+
+    db.all(sql, (err, rows) => {
+        if(err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+
 
 app.post('/api/registers', (req, res) => {
     const { date, system_amount, cash_amount, memo } = req.body;
