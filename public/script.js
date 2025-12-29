@@ -76,7 +76,16 @@ async function saveRecord() {
         })
     });
 
-    alert("記録しました！");
+    const btn = document.querySelector('button[onclick="saveRecord()"]');
+    const originalText = btn.innerText;
+    btn.innerText = "✅ 保存完了";
+    
+    setTimeout(() => {
+        btn.innerText = originalText;
+    }, 2000);
+
+    resetInputs();
+
     loadHistory();
 }
 
@@ -213,4 +222,17 @@ function scrollToGraph() {
     if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+}
+
+function resetInputs() {
+    document.getElementById('input-system').value = '';
+
+    const counts = document.querySelectorAll('.cash-count');
+    counts.forEach(input => input.value = '');
+
+    document.getElementById('input-memo').value = '';
+
+    calc();
+
+    document.getElementById('input-date').focus();
 }

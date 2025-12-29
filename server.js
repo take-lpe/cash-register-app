@@ -1,12 +1,19 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-const db = new sqlite3.Database('./cash.db');
+const dbPath = process.env.APPDATA
+    ? path.join(process.env.APPDATA, 'cash.db')
+    : path.join(__dirname, 'cash.db');
+
+const db = new sqlite3.Database(dbPath);
+
+console.log('Database path:', dbPath);
 
 db.serialize(() => {
     db.run(`
@@ -34,7 +41,7 @@ app.get('/api/graph-data', (req, res) => {
     const sql = "SELECT * FROM registers ORDER BY date ASC";
 
     db.all(sql, (err, rows) => {
-        if(err) return res.status(500).json({ error: err.message });
+        if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });

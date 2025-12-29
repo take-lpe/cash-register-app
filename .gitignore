@@ -1,3 +1,6 @@
-node_modules
-database.sqlite
+node_modules/
+dist/
+release/
 .DS_Store
+*.exe
+*.db
